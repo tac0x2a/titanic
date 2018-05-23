@@ -40,18 +40,19 @@ from sklearn.ensemble import GradientBoostingClassifier
 gbc = GradientBoostingClassifier(n_estimators=100, max_depth=3).fit(X_train, y_train)
 gbc.score(X_test, y_test)
 
+from sklearn.linear_model import LogisticRegression
+lr = LogisticRegression().fit(X_train, y_train)
+lr.score(X_test, y_test)
 
-test = pd.read_csv('test.csv')
-test = make_train_RandomForest(test)
-test = test.fillna(value={"Fare": test.describe().Fare["50%"]})
-# test.isnull().sum()
+def predict_and_output_csv(model, file_name):
+    test = pd.read_csv('test.csv')
+    test = make_train_RandomForest(test)
+    test = test.fillna(value={"Fare": test.describe().Fare["50%"]})
 
+    predict_res = pd.DataFrame(model.predict(test.drop(['PassengerId'], axis=1)), columns=['Survived'])
+    result = pd.concat([test.PassengerId, predict_res], axis=1)
+    result.to_csv(file_name, index=False)
 
-rfc_res = pd.DataFrame(rfc.predict(test.drop(['PassengerId'], axis=1)), columns=['Survived'])
-result = pd.concat([test.PassengerId, rfc_res], axis=1)
-result.to_csv("rfc.csv", index=False)
-
-
-gbc_res = pd.DataFrame(gbc.predict(test.drop(['PassengerId'], axis=1)), columns=["Survived"])
-result = pd.concat([test.PassengerId, gbc_res], axis=1)
-result.to_csv("gbc.csv", index=False)
+predict_and_output_csv(lr, "lr.csv")
+predict_and_output_csv(rfc, "rfc.csv")
+predict_and_output_csv(gbc, "gbc.csv")
